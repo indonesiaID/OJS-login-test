@@ -1,4 +1,5 @@
 # 🔐 OJS Login Tester (CSV + CSRF + Role Detection)
+![Preview](https://raw.githubusercontent.com/indonesiaID/OJS-login-test/refs/heads/main/Screenshot_2026-04-05_15-59-57.png)
 
 Tool sederhana berbasis Python untuk melakukan pengujian login pada sistem **Open Journal Systems (OJS)** menggunakan daftar username & password dari file CSV.
 
